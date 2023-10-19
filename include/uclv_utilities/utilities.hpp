@@ -15,7 +15,7 @@
 // EIGEN INCLUDE
 #include <eigen3/Eigen/Geometry>
 
-namespace lv
+namespace uclv
 {
     // Press y to continue, n to exit (other inputs not ammitted)
     bool askContinue(const std::string &prompt = "")
