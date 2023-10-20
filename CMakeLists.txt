@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(lv_utilities)
+project(uclv_utilities)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -49,5 +49,6 @@ install(
 )
 
 ament_export_include_directories(include)
+ament_python_install_package(uclv_utilities)
 
 ament_package()
