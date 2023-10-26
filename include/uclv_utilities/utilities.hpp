@@ -154,4 +154,17 @@ namespace uclv
         return transformed_pose;
     }
 
+    auto normalize_quaternion(const geometry_msgs::msg::Quaternion &quat)
+    {
+        double quat_norm_ = std::sqrt(std::pow(quat.w, 2) + std::pow(quat.x, 2) + std::pow(quat.y, 2) + std::pow(quat.z, 2));
+
+        geometry_msgs::msg::Quaternion quat_norm;
+        quat_norm.x = quat.x / quat_norm_;
+        quat_norm.y = quat.y / quat_norm_;
+        quat_norm.z = quat.z / quat_norm_;
+        quat_norm.w = quat.w / quat_norm_;
+
+        return quat_norm;
+    }
+
 }
