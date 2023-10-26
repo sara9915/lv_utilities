@@ -11,6 +11,7 @@
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include "geometry_msgs/msg/pose.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 
 // EIGEN INCLUDE
 #include <eigen3/Eigen/Geometry>
@@ -124,6 +125,33 @@ namespace uclv
         pose_.orientation.z = quaternion.z();
 
         return pose_;
+    }
+
+    auto transform_pose(rclcpp::Node::SharedPtr node_, const geometry_msgs::msg::PoseStamped &obj_pose, const std::string &frame_to_transform)
+    {
+        /* Reading transform camera_T_newframe (camera_frame - down, new_frame - up) */
+        bool getTransform_ = false;
+        geometry_msgs::msg::TransformStamped nf_Transform_c;
+        while (!getTransform_ && rclcpp::ok())
+            getTransform_ = uclv::getTransform(node_, frame_to_transform, obj_pose.header.frame_id, nf_Transform_c);
+
+        Eigen::Isometry3d nf_T_c = uclv::geometry_2_eigen(nf_Transform_c.transform);
+        // uclv::print_geometry_transform(nf_Transform_c.transform);
+
+        /* Transform camera_T_object (camera_frame - up, object_frame - down) */
+        Eigen::Isometry3d c_T_obj = uclv::geometry_2_eigen(obj_pose.pose);
+
+        /* Calculate frame object-base*/
+        Eigen::Isometry3d nf_T_obj;
+        nf_T_obj = nf_T_c * c_T_obj;
+
+        /* return the transformed pose */
+        geometry_msgs::msg::PoseStamped transformed_pose;
+        transformed_pose.header.stamp = obj_pose.header.stamp;
+        transformed_pose.header.frame_id = frame_to_transform;
+        transformed_pose.pose = uclv::eigen_2_geometry(nf_T_obj);
+
+        return transformed_pose;
     }
 
 }

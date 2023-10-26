@@ -40,10 +40,6 @@ private:
                   result.get()->refined_pose.pose.position.x,
                   result.get()->refined_pose.pose.position.y,
                   result.get()->refined_pose.pose.position.z);
-      RCLCPP_INFO(get_logger(), "Scaled Cuboid Dimension: %f, %f, %f",
-                  result.get()->scaled_cuboid_dimension[0],
-                  result.get()->scaled_cuboid_dimension[1],
-                  result.get()->scaled_cuboid_dimension[2]);
       RCLCPP_INFO(get_logger(), "Scale Object: %f", result.get()->scale_obj);
       RCLCPP_INFO(get_logger(), "Success: %d", result.get()->success);
     }
