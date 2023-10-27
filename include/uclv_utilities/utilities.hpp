@@ -37,7 +37,6 @@ namespace uclv
 
         throw std::runtime_error("USER STOP!");
     }
-
     // Get homogeneous matrix from source frame to reference frame {reference_frame}_T_{source_frame}
     bool getTransform(rclcpp::Node::SharedPtr node_, const std::string &target_frame, const std::string &source_frame, geometry_msgs::msg::TransformStamped &transform)
     {
@@ -127,29 +126,30 @@ namespace uclv
         return pose_;
     }
 
-    auto transform_pose(rclcpp::Node::SharedPtr node_, const geometry_msgs::msg::PoseStamped &obj_pose, const std::string &frame_to_transform)
+    // this function transform the given pose target_pose from the old_frame target_pose.header.frame_id to the new frame frame_to_transform
+    auto transform_pose(rclcpp::Node::SharedPtr node_, const geometry_msgs::msg::PoseStamped &target_pose, const std::string &frame_to_transform)
     {
-        /* Reading transform camera_T_newframe (camera_frame - down, new_frame - up) */
+        /* Reading transform oldframe_T_newframe (old_frame - down, new_frame - up) */
         bool getTransform_ = false;
-        geometry_msgs::msg::TransformStamped nf_Transform_c;
+        geometry_msgs::msg::TransformStamped nf_Transform_of;
         while (!getTransform_ && rclcpp::ok())
-            getTransform_ = uclv::getTransform(node_, frame_to_transform, obj_pose.header.frame_id, nf_Transform_c);
+            getTransform_ = uclv::getTransform(node_, frame_to_transform, target_pose.header.frame_id, nf_Transform_of);
 
-        Eigen::Isometry3d nf_T_c = uclv::geometry_2_eigen(nf_Transform_c.transform);
-        // uclv::print_geometry_transform(nf_Transform_c.transform);
+        Eigen::Isometry3d nf_T_of = uclv::geometry_2_eigen(nf_Transform_of.transform);
+        // uclv::print_geometry_transform(nf_Transform_of.transform);
 
-        /* Transform camera_T_object (camera_frame - up, object_frame - down) */
-        Eigen::Isometry3d c_T_obj = uclv::geometry_2_eigen(obj_pose.pose);
+        /* Transform oldframe_T_targetpose (old_frame - up, target_pose - down) */
+        Eigen::Isometry3d of_T_tp = uclv::geometry_2_eigen(target_pose.pose);
 
-        /* Calculate frame object-base*/
-        Eigen::Isometry3d nf_T_obj;
-        nf_T_obj = nf_T_c * c_T_obj;
+        /* Calculate frame target-base*/
+        Eigen::Isometry3d nf_T_tp;
+        nf_T_tp = nf_T_of * of_T_tp;
 
         /* return the transformed pose */
         geometry_msgs::msg::PoseStamped transformed_pose;
-        transformed_pose.header.stamp = obj_pose.header.stamp;
+        transformed_pose.header.stamp = target_pose.header.stamp;
         transformed_pose.header.frame_id = frame_to_transform;
-        transformed_pose.pose = uclv::eigen_2_geometry(nf_T_obj);
+        transformed_pose.pose = uclv::eigen_2_geometry(nf_T_tp);
 
         return transformed_pose;
     }
@@ -165,6 +165,16 @@ namespace uclv
         quat_norm.w = quat.w / quat_norm_;
 
         return quat_norm;
+    }
+    // This function computes a_T_c = a_T_b * b_T_c (a_T_b and b_T_c are geometry_msgs::msg::Pose) and returns a_T_c as geometry_msgs::msg::Pose
+    geometry_msgs::msg::Pose transform_product(const geometry_msgs::msg::Pose &a_P_b, const geometry_msgs::msg::Pose &b_P_c)
+    {
+        Eigen::Isometry3d a_T_b = uclv::geometry_2_eigen(a_P_b);
+        Eigen::Isometry3d b_T_c = uclv::geometry_2_eigen(b_P_c);
+
+        Eigen::Isometry3d a_T_c = a_T_b * b_T_c;
+
+        return uclv::eigen_2_geometry(a_T_c);
     }
 
 }
