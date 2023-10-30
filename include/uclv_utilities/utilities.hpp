@@ -228,5 +228,22 @@ namespace uclv
 
         return (coeff(0, i) * 5 * t_4 + coeff(1, i) * 4 * t_3 + coeff(2, i) * 3 * t_2 + coeff(3, i) * 2 * t + coeff(4, i));
     }
+    // this function computes the distance between the positions of two geometry_msgs::msg::PoseStamped
+    double pose_distance(const geometry_msgs::msg::PoseStamped& pose_1, const geometry_msgs::msg::PoseStamped& pose_2)
+    {
+        return sqrt(pow(pose_1.pose.position.x - pose_2.pose.position.x, 2) +
+                    pow(pose_1.pose.position.y - pose_2.pose.position.y, 2) +
+                    pow(pose_1.pose.position.z - pose_2.pose.position.z, 2));
+    }
+    // this function sort the poses according to the distance from the reference pose
+    std::vector<geometry_msgs::msg::PoseStamped> sort_pre_grasp_poses(const geometry_msgs::msg::PoseStamped& reference_pose, std::vector<geometry_msgs::msg::PoseStamped> poses)
+    {
+        std::stable_sort(poses.begin(), poses.end(),
+                         [&reference_pose](const geometry_msgs::msg::PoseStamped &pose1, const geometry_msgs::msg::PoseStamped &pose2)
+                         {
+                             return pose_distance(pose1, reference_pose) < pose_distance(pose2, reference_pose);
+                         });
+        return poses;
+    }
 
 }
