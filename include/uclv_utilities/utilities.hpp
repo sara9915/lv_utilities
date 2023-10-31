@@ -22,7 +22,7 @@ namespace uclv
     bool askContinue(const std::string &prompt = "")
     {
         char ans;
-        std::cout << prompt << BOLDBLUE << "- Press y to continue or n to exit: " << RESET;
+        std::cout << prompt << BOLDBLUE << "- Press y to continue or n to exit: " << RESET << std::flush;
         std::cin >> ans;
 
         switch (tolower(ans))
