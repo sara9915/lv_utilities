@@ -12,6 +12,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/pose_array.hpp"
 
 // EIGEN INCLUDE
 #include <eigen3/Eigen/Geometry>
@@ -37,6 +38,35 @@ namespace uclv
 
         throw std::runtime_error("USER STOP!");
     }
+    geometry_msgs::msg::PoseStamped transform_2_geometry(geometry_msgs::msg::TransformStamped &transform)
+    {
+        geometry_msgs::msg::PoseStamped pose;
+        pose.header.stamp = transform.header.stamp;
+        pose.header.frame_id = transform.header.frame_id;
+
+        pose.pose.position.x = transform.transform.translation.x;
+        pose.pose.position.y = transform.transform.translation.y;
+        pose.pose.position.z = transform.transform.translation.z;
+
+        pose.pose.orientation.x = transform.transform.rotation.x;
+        pose.pose.orientation.y = transform.transform.rotation.y;
+        pose.pose.orientation.z = transform.transform.rotation.z;
+        pose.pose.orientation.w = transform.transform.rotation.w;
+
+        return pose;
+    }
+    auto pose_stamped_2_pose_array(std::vector<geometry_msgs::msg::PoseStamped> poses)
+    {
+        geometry_msgs::msg::PoseArray pose_array;
+        pose_array.header.stamp = poses.begin()->header.stamp;
+        pose_array.header.frame_id = poses.begin()->header.frame_id;
+        for (std::size_t i = 0; i < poses.size(); i++)
+        {
+            pose_array.poses.push_back(poses[i].pose);
+        }
+        return pose_array;
+    }
+
     // Get homogeneous matrix from source frame to reference frame {reference_frame}_T_{source_frame}
     bool getTransform(rclcpp::Node::SharedPtr node_, const std::string &target_frame, const std::string &source_frame, geometry_msgs::msg::TransformStamped &transform)
     {
@@ -60,7 +90,6 @@ namespace uclv
             return false;
         }
     }
-
     // Visualize geometry_msgs::Transform
     void print_geometry_transform(const geometry_msgs::msg::Transform transform)
     {
@@ -227,6 +256,23 @@ namespace uclv
         double t_4 = pow(t, 4);
 
         return (coeff(0, i) * 5 * t_4 + coeff(1, i) * 4 * t_3 + coeff(2, i) * 3 * t_2 + coeff(3, i) * 2 * t + coeff(4, i));
+    }
+    // this function computes the distance between the positions of two geometry_msgs::msg::PoseStamped
+    double pose_distance(const geometry_msgs::msg::PoseStamped &pose_1, const geometry_msgs::msg::PoseStamped &pose_2)
+    {
+        return sqrt(pow(pose_1.pose.position.x - pose_2.pose.position.x, 2) +
+                    pow(pose_1.pose.position.y - pose_2.pose.position.y, 2) +
+                    pow(pose_1.pose.position.z - pose_2.pose.position.z, 2));
+    }
+    // this function sort the poses according to the distance from the reference pose
+    std::vector<geometry_msgs::msg::PoseStamped> sort_pre_grasp_poses(const geometry_msgs::msg::PoseStamped &reference_pose, std::vector<geometry_msgs::msg::PoseStamped> poses)
+    {
+        std::stable_sort(poses.begin(), poses.end(),
+                         [&reference_pose](const geometry_msgs::msg::PoseStamped &pose1, const geometry_msgs::msg::PoseStamped &pose2)
+                         {
+                             return pose_distance(pose1, reference_pose) < pose_distance(pose2, reference_pose);
+                         });
+        return poses;
     }
 
 }
