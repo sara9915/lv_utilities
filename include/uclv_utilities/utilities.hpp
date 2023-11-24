@@ -38,7 +38,7 @@ namespace uclv
 
         throw std::runtime_error("USER STOP!");
     }
-    geometry_msgs::msg::PoseStamped transform_2_geometry(geometry_msgs::msg::TransformStamped &transform)
+    geometry_msgs::msg::PoseStamped transform_2_geometry(const geometry_msgs::msg::TransformStamped &transform)
     {
         geometry_msgs::msg::PoseStamped pose;
         pose.header.stamp = transform.header.stamp;
@@ -68,7 +68,8 @@ namespace uclv
     }
 
     // Get homogeneous matrix from source frame to reference frame {reference_frame}_T_{source_frame}
-    bool getTransform(rclcpp::Node::SharedPtr node_, const std::string &target_frame, const std::string &source_frame, geometry_msgs::msg::TransformStamped &transform)
+    bool getTransform(rclcpp::Node::SharedPtr node_, const std::string &target_frame, const std::string &source_frame, 
+                        geometry_msgs::msg::TransformStamped &transform, const tf2::TimePoint &transform_time = tf2::TimePointZero)
     {
         std::unique_ptr<tf2_ros::Buffer> tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node_->get_clock());
         std::shared_ptr<tf2_ros::TransformListener> tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
@@ -79,9 +80,8 @@ namespace uclv
 
         try
         {
-            rclcpp::Time now = node_->get_clock()->now();
             tf_buffer_->waitForTransform(target_frame, source_frame, tf2::TimePointZero, tf2::durationFromSec(3.0), [](auto &) {});
-            transform = tf_buffer_->lookupTransform(target_frame, source_frame, tf2::TimePointZero, tf2::durationFromSec(3.0));
+            transform = tf_buffer_->lookupTransform(target_frame, source_frame, transform_time, tf2::durationFromSec(3.0));
             return true;
         }
         catch (const tf2::TransformException &ex)
