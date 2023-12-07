@@ -8,7 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(depth_optimization_interfaces REQUIRED)
+# find_package(depth_optimization_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -32,16 +32,16 @@ endif()
 
 include_directories(include)
 
-add_executable(test_tf2_listener src/test_tf2_listener.cpp)
-add_executable(srv_client src/srv_client.cpp)
+# add_executable(test_tf2_listener src/test_tf2_listener.cpp)
+# add_executable(srv_client src/srv_client.cpp)
 
-ament_target_dependencies(test_tf2_listener rclcpp geometry_msgs tf2 tf2_ros)
-ament_target_dependencies(srv_client rclcpp depth_optimization_interfaces)  
+# ament_target_dependencies(test_tf2_listener rclcpp geometry_msgs tf2 tf2_ros)
+# ament_target_dependencies(srv_client rclcpp depth_optimization_interfaces)  
 
-install(TARGETS
-  test_tf2_listener
-  srv_client
-  DESTINATION lib/${PROJECT_NAME})
+# install(TARGETS
+#   test_tf2_listener
+#   srv_client
+#   DESTINATION lib/${PROJECT_NAME})
 
 install(
   DIRECTORY include/
