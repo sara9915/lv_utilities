@@ -118,6 +118,7 @@ namespace uclv
     auto geometry_2_eigen(const geometry_msgs::msg::Pose &pose_)
     {
         Eigen::Quaterniond quaternion(pose_.orientation.w, pose_.orientation.x, pose_.orientation.y, pose_.orientation.z);
+        quaternion.normalize();
         Eigen::Isometry3d T(quaternion);
         T.translation().x() = pose_.position.x;
         T.translation().y() = pose_.position.y;
@@ -130,6 +131,7 @@ namespace uclv
     auto geometry_2_eigen(const geometry_msgs::msg::Transform &transform_)
     {
         Eigen::Quaterniond quaternion(transform_.rotation.w, transform_.rotation.x, transform_.rotation.y, transform_.rotation.z);
+        quaternion.normalize();
         Eigen::Isometry3d T(quaternion);
         T.translation().x() = transform_.translation.x;
         T.translation().y() = transform_.translation.y;
@@ -143,6 +145,7 @@ namespace uclv
     {
         geometry_msgs::msg::Pose pose_;
         Eigen::Quaterniond quaternion(transform.rotation());
+        quaternion.normalize();
         pose_.position.x = transform.translation().x();
         pose_.position.y = transform.translation().y();
         pose_.position.z = transform.translation().z();
